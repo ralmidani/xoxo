@@ -3,10 +3,29 @@ import {Map} from 'immutable'
 const initialState = {
   board: Map(),
   turn: 'X',
-  winner: null
+  winner: null,
+  error: null
 };
 
 const MOVE = 'MOVE';
+
+const bad = (state, action) => {
+  if (action.player !== state.turn) {
+    return `Hey ${action.player}, wait your turn!`;
+  }
+  const validCoords = [0, 1, 2];
+  if (validCoords.indexOf(action.position[0]) < 0 || validCoords.indexOf(action.position[1]) < 0) {
+    return `
+      Sorry, that is not a valid position. 
+      Please enter two numbers between 0 and 2, separated by a comma.
+    `;
+  }
+  const {board} = state;
+  if (board.hasIn(action.position)) {
+    return `Sorry, that place is already taken.`;
+  }
+  return null;
+}
 
 export const move = (player, position) => ({type: MOVE, position, player});
 
@@ -15,7 +34,7 @@ const streak = (board, firstCoord, secondCoord, thirdCoord) => {
   const valueAtSecond = board.getIn(secondCoord);
   const valueAtThird = board.getIn(thirdCoord);
 
-  if(valueAtFirst !== undefined && valueAtFirst === valueAtSecond && valueAtSecond === valueAtThird) {
+  if (valueAtFirst !== undefined && valueAtFirst === valueAtSecond && valueAtSecond === valueAtThird) {
     return valueAtFirst;
   } else {
     return undefined;
@@ -68,10 +87,17 @@ function boardReducer(board = Map(), action) {
 }
 
 export default function reducer(state = initialState, action) {
+  const error = bad(state, action);
+  if (error !== null) {
+    const newState = Object.assign({}, state, {error});
+    console.log(newState);
+    return newState;
+  }
   const updatedBoard = boardReducer(state.board, action);
   return {
     board: updatedBoard,
     turn: turnReducer(state.turn, action),
-    winner: winner(updatedBoard)
+    winner: winner(updatedBoard),
+    error: null
   };
 }
