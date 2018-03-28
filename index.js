@@ -14,7 +14,7 @@ const printBoard = () => {
 }
 
 const getInput = player => async () => {
-  const {turn} = game.getState()  
+  const {turn} = game.getState()
   if (turn !== player) return
   const ans = await inquirer.prompt([{
     type: 'input',
@@ -25,16 +25,31 @@ const getInput = player => async () => {
   game.dispatch(move(turn, [row, col]))
 }
 
+const checkForWinner = () => {
+  const { winner } = game.getState();
+  switch (winner) {
+    case 'draw':
+      console.log('We have a tie.')
+      process.exit(0);
+      break;
+    case null:
+      break;
+    default:
+      console.log(`${winner} won!`);
+      process.exit(0);
+  }
+}
 // Create the store
 const game = createStore(gameReducer)
 
 // Debug: Print the state
 // game.subscribe(() => console.log(game.getState()))
 
-game.subscribe(printBoard)
-game.subscribe(getInput('X'))
-game.subscribe(getInput('O'))
+game.subscribe(printBoard);
+game.subscribe(getInput('X'));
+game.subscribe(getInput('O'));
+game.subscribe(checkForWinner);
 
 // We dispatch a dummy START action to call all our
 // subscribers the first time.
-game.dispatch({ type: 'START' })
+game.dispatch({ type: 'START' });
