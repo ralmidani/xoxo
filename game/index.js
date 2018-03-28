@@ -10,19 +10,24 @@ const initialState = {
 const MOVE = 'MOVE';
 
 const bad = (state, action) => {
+  let error;
   if (action.player !== state.turn) {
-    return `Hey ${action.player}, wait your turn!`;
+    error = `Hey ${action.player}, wait your turn!`
   }
   const validCoords = [0, 1, 2];
   if (validCoords.indexOf(action.position[0]) < 0 || validCoords.indexOf(action.position[1]) < 0) {
-    return `
+    error = `
       Sorry, that is not a valid position. 
       Please enter two numbers between 0 and 2, separated by a comma.
     `;
   }
   const {board} = state;
   if (board.hasIn(action.position)) {
-    return `Sorry, that place is already taken.`;
+    error = `Sorry, that place is already taken.`;
+  }
+  if (error) {
+    console.log(error);
+    return error;
   }
   return null;
 }
@@ -87,17 +92,21 @@ function boardReducer(board = Map(), action) {
 }
 
 export default function reducer(state = initialState, action) {
-  const error = bad(state, action);
-  if (error !== null) {
-    const newState = Object.assign({}, state, {error});
-    console.log(newState);
-    return newState;
+  if (action.type === MOVE) {
+    const error = bad(state, action);
+    if (error !== null) {
+      const newState = Object.assign({}, state, {error, turn: action.player});
+      return newState;
+    }
+    const updatedBoard = boardReducer(state.board, action);
+    return {
+      board: updatedBoard,
+      turn: turnReducer(state.turn, action),
+      winner: winner(updatedBoard),
+      error: null
+    };
   }
-  const updatedBoard = boardReducer(state.board, action);
-  return {
-    board: updatedBoard,
-    turn: turnReducer(state.turn, action),
-    winner: winner(updatedBoard),
-    error: null
-  };
+  else {
+    return state;
+  }
 }
