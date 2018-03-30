@@ -5,7 +5,13 @@ import reducer, {move, bad} from '.'
  * 
  * Return an array of actions which are valid moves from the given state.
  */
-export const moves = game => [] // TODO
+export const moves = game => (
+  [
+    [0, 0], [0, 1], [0, 2],
+    [1, 0], [1, 1], [1, 2],
+    [2, 0], [2, 1], [2, 2]
+  ].filter(position => !bad(game, move(game.turn, position)))
+);
 
 /**
  * score(game: State, move: Action) -> Number
